@@ -1,0 +1,110 @@
+:root {
+  --bg: #0f1724;
+  --card: #0b1220;
+  --accent: #0284c7;
+  --muted: #94a3b8;
+  --text: #e6eef6;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: linear-gradient(180deg, var(--bg), #071023);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 28px auto;
+  padding: 20px;
+  position: relative;
+}
+
+/* decorative blurred circles */
+.bg-deco {
+  position: absolute;inset:0;pointer-events:none;z-index:0;
+}
+.bg-deco::before, .bg-deco::after{
+  content:'';position:absolute;border-radius:50%;filter:blur(80px);opacity:0.5;
+}
+.bg-deco::before{width:420px;height:420px;background:linear-gradient(135deg,#0ea5e9,#7c3aed);left:-80px;top:-120px}
+.bg-deco::after{width:360px;height:360px;background:linear-gradient(135deg,#f97316,#ef4444);right:-80px;bottom:-120px}
+
+.header {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom: 18px;
+  position:relative;z-index:1;
+}
+.logo {
+  width:48px;height:48px;border-radius:10px;background:var(--accent);
+}
+.title { font-size:20px;font-weight:700 }
+
+.controls { display:flex;gap:10px; margin:18px 0 20px 0;position:relative;z-index:1 }
+.controls input[type="text"]{
+  flex:1;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:var(--text);font-size:14px;
+}
+.controls button{padding:11px 16px;border-radius:12px;border:none;background:var(--accent);color:#04212b;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(2,132,199,0.16);transition:transform .12s ease}
+.controls button:hover{transform:translateY(-2px)}
+
+.grid {
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;position:relative;z-index:1;
+}
+.card{
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(6px) saturate(120%);
+  -webkit-backdrop-filter: blur(6px) saturate(120%);
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius:14px;padding:14px;min-height:140px;display:flex;flex-direction:column;justify-content:flex-start;gap:8px;transition:transform .18s ease, box-shadow .18s ease;
+}
+.card:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(2,6,23,0.6)}
+
+.card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.city { font-size:15px;font-weight:800 }
+.temp { font-size:30px;font-weight:800;color:var(--accent);margin-left:8px }
+.meta { color:var(--muted); font-size:13px }
+
+.icon { font-size:34px; width:54px; height:54px; display:flex;align-items:center;justify-content:center;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); }
+
+.details { display:flex;flex-direction:column;gap:6px }
+.details .row{display:flex;justify-content:space-between;gap:8px}
+.details .label{color:var(--muted);font-size:12px}
+
+.spinner{width:42px;height:42px;border-radius:50%;border:4px solid rgba(255,255,255,0.08);border-top-color:var(--accent);animation:spin 1s linear infinite;margin:auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media (max-width:700px){
+  .title{font-size:18px}
+  .temp{font-size:22px}
+  .card{min-height:120px;padding:12px}
+  .icon{font-size:28px;width:46px;height:46px}
+}
+
+.footer-note{color:var(--muted);font-size:13px;margin-top:12px;text-align:center}
+
+/* Horizontal table styles */
+.table-container{overflow:auto;margin-top:12px}
+.h-table{width:100%;border-collapse:collapse;min-width:640px}
+.h-table thead th{background:rgba(255,255,255,0.02);padding:12px;border-bottom:1px solid rgba(255,255,255,0.04);text-align:center}
+.h-table tbody td{padding:12px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:center}
+.h-table .label-cell{text-align:left;color:var(--muted);font-weight:600}
+.h-table th .icon{display:block;margin-top:6px}
+
+@media (max-width:720px){
+  /* On small screens make table horizontally scrollable and slightly compact */
+  .h-table{min-width:700px}
+  .h-table thead th, .h-table tbody td{padding:10px}
+}
+
+/* Forecast button and container */
+.btn-forecast{margin-top:8px;padding:6px 8px;border-radius:8px;border:none;background:#0ea5e9;color:#02121a;font-weight:700;cursor:pointer}
+.forecast-container{margin-top:16px}
+.forecast-container .card{padding:10px}
+
+
+
+

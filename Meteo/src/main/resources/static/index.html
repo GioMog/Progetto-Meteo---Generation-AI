@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Meteo App</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="bg-deco"></div>
+    <div class="header">
+      <div class="logo"></div>
+      <div class="title">Meteo • Confronto rapido</div>
+    </div>
+
+    <div class="controls">
+      <input id="cities" type="text" placeholder="Esempio: Rome, London, Paris" />
+      <button id="btn">Mostra meteo</button>
+    </div>
+
+    <div id="tableContainer" class="table-container"></div>
+
+    <div id="forecastContainer" class="forecast-container"></div>
+
+    <div class="footer-note">Dati forniti da Open-Meteo • Aggiorna ad ogni richiesta</div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('btn');
+    const input = document.getElementById('cities');
+    const container = document.getElementById('tableContainer');
+
+    btn.addEventListener('click', async () => {
+      const cities = input.value.trim();
+      if (!cities) return;
+      container.innerHTML = '<div class="card"><div class="spinner"></div></div>';
+      try {
+        const res = await fetch(`/weather/multi?cities=${encodeURIComponent(cities)}`);
+        if (!res.ok) throw new Error('Errore nella chiamata');
+        const list = await res.json();
+        render(list);
+      } catch (e) {
+        container.innerHTML = '<div class="card">Errore: ' + e.message + '</div>';
+      }
+    });
+
+    function render(list) {
+      if (!Array.isArray(list) || list.length === 0) {
+        container.innerHTML = '<div class="card">Nessun dato disponibile</div>';
+        return;
+      }
+      // build horizontal table: columns = cities, rows = metrics
+      container.innerHTML = '';
+      const table = document.createElement('table');
+      table.className = 'h-table';
+
+      // header row with city names and icons
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+      headerRow.appendChild(document.createElement('th')); // corner empty cell
+      list.forEach(wd => {
+        const th = document.createElement('th');
+        // city title
+        const cityDiv = document.createElement('div');
+        cityDiv.className = 'city';
+        cityDiv.textContent = wd.city || '';
+
+        // icon
+        const iconDiv = document.createElement('div');
+        iconDiv.className = 'icon';
+        iconDiv.textContent = mapIcon(wd.description);
+
+        // forecast button
+        const fbtn = document.createElement('button');
+        fbtn.className = 'btn-forecast';
+        fbtn.textContent = '5 giorni';
+        fbtn.dataset.city = wd.city || '';
+        fbtn.addEventListener('click', () => fetchForecast(fbtn.dataset.city));
+
+        th.appendChild(cityDiv);
+        th.appendChild(iconDiv);
+        th.appendChild(fbtn);
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      // helper to create a row for a metric
+      function rowFor(label, accessor, formatFn){
+        const tr = document.createElement('tr');
+        const tdLabel = document.createElement('td');
+        tdLabel.className = 'label-cell';
+        tdLabel.textContent = label;
+        tr.appendChild(tdLabel);
+        list.forEach(wd => {
+          const td = document.createElement('td');
+          let v = accessor(wd);
+          td.textContent = formatFn ? formatFn(v) : (v != null ? String(v) : 'N/A');
+          tr.appendChild(td);
+        });
+        return tr;
+      }
+
+      const tbody = document.createElement('tbody');
+      tbody.appendChild(rowFor('Temperatura', wd => wd.temperature, v => isFinite(v) ? v.toFixed(1) + '°C' : 'N/A'));
+      tbody.appendChild(rowFor('Umidità', wd => wd.humidity, v => v != null ? Math.round(v) + '%' : 'N/A'));
+      tbody.appendChild(rowFor('Vento', wd => wd.windSpeed, v => v != null ? v.toFixed(1) + ' m/s' : 'N/A'));
+      tbody.appendChild(rowFor('Precipitazioni', wd => wd.precipitation, v => v != null ? v.toFixed(1) + ' mm' : 'N/A'));
+      tbody.appendChild(rowFor('Descrizione', wd => wd.description, v => v || ''));
+
+      table.appendChild(tbody);
+      container.appendChild(table);
+    }
+
+    async function fetchForecast(city){
+      const fc = document.getElementById('forecastContainer');
+      if(!city) return;
+      fc.innerHTML = '<div class="card"><div class="spinner"></div></div>';
+      try{
+        const res = await fetch(`/forecast5?city=${encodeURIComponent(city)}`);
+        if(!res.ok) throw new Error('Errore nella chiamata forecast');
+        const text = await res.text();
+        // show as preformatted text
+        fc.innerHTML = `<div class="card"><pre style="white-space:pre-wrap;margin:0;padding:8px">${escapeHtml(text)}</pre></div>`;
+      }catch(e){
+        fc.innerHTML = '<div class="card">Errore: ' + e.message + '</div>';
+      }
+    }
+
+    function escapeHtml(unsafe) {
+      return unsafe.replace(/[&<>"']/g, function(m) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"})[m]; });
+    }
+
+    function mapIcon(desc){
+      if(!desc) return '☀️';
+      const d = desc.toLowerCase();
+      if(d.includes('sole')||d.includes('sereno')||d.includes('sun')) return '☀️';
+      if(d.includes('nuvol')||d.includes('cloud')) return '☁️';
+      if(d.includes('piogg')||d.includes('rain')||d.includes('rovesc')) return '🌧️';
+      if(d.includes('neve')||d.includes('snow')) return '❄️';
+      if(d.includes('tempor')||d.includes('thunder')) return '⛈️';
+      return '🌤️';
+    }
+  </script>
+</body>
+</html>
+
